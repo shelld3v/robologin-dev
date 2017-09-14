@@ -10,7 +10,7 @@ class Dictionary:
         self.current = 0
         self.wordlist_parser = self._default_wordlist_parser
 
-    def append_from_file(self, path, wordlist_parser=None):
+    def append_from_source(self, path, wordlist_parser=None):
         entries = None
         if self.wordlist_parser is None:
             entries = self.wordlist_parser(path)
