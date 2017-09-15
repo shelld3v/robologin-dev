@@ -2,7 +2,7 @@ import threading
 
 
 class Worker:
-    def __init__(self, requester, dictionary, engine):
+    def __init__(self, requester, dictionary, engine, max_threads=10):
         self.requester = requester
         self.dictionary = dictionary
         self.engine = engine
