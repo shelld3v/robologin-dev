@@ -19,6 +19,10 @@ class CommandLineController(object):
         PROGRAM_BANNER = open(FileUtils.buildPath(script_path, "lib", "controller", "banner.txt")).read().format(
             **VERSION)
 
+
+    def start(self):
+
+
     def parse_arguments(self):
         raise NotImplemented
 
@@ -32,6 +36,12 @@ class CommandLineController(object):
         raise NotImplemented
 
     def match_callback(self, credentials):
+        raise NotImplemented
+
+    def error_callback(self):
+        raise NotImplemented
+
+    def critical_error_callback(self):
         raise NotImplemented
 
     def handler_interrupt(self):

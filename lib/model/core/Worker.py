@@ -65,3 +65,9 @@ class Worker:
 
     def _thread_proc(self):
         raise NotImplemented
+
+    def check_threads(self):
+        raise NotImplemented
+
+    def _thread_monitor(self):
+        raise NotImplemented

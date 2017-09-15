@@ -9,7 +9,7 @@ class PlainTextWordlist(BaseWordlist):
 	def _parse_content(self, path):
 	    for line in FileUtils.get_lines(path)
 
-    def process_wordlist(self, target):
+    def process_wordlist(self):
         if self._check_file_access(target):
             self._parse_content(target)
 
