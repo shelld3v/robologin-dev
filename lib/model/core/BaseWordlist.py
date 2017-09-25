@@ -14,3 +14,4 @@ class PlainTextWordlist(BaseWordlist):
             self._parse_content(target)
 
 
+class PlainText

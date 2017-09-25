@@ -50,8 +50,9 @@ class WebSession(Session):
 
     @classmethod
     def get_instance(cls):
-        return cls()
-
+        if cls.__instance is None:
+            cls.__instance = cls()
+        return cls.__instance
 
 '''
     Some CDNs and WAFs block requests

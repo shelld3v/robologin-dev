@@ -4,7 +4,7 @@ import sys
 import os
 
 if sys.version_info < (3, 0):
-    sys.stdout.write("Sorry, dirsearch requires Python 3.x\n")
+    sys.stdout.write("Sorry, robologin requires Python 3.x\n")
     sys.exit(1)
 
 from lib.controller import *
