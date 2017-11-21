@@ -1,5 +1,5 @@
 import threading
-from lib.utils.FileUtils import FileUtils
+
 from oset import oset
 
 
@@ -8,24 +8,16 @@ class Dictionary:
         self.entries = []
         self.condition = threading.Lock()
         self.current = 0
-        self.wordlist_parser = self._default_wordlist_parser
 
-    def append_from_source(self, path, wordlist_parser=None):
-        entries = None
-        if self.wordlist_parser is None:
-            entries = self.wordlist_parser(path)
-        else:
-            entries = wordlist_parser(path)
-        self.entries = list(oset(self.entries + entries))
+    def append_from_wordlist(self, wordlist):
+        self.entries = list(oset(self.entries + wordlist.process()))
 
     def get_with_index(self):
         self.condition.acquire()
-        current = None
         result = None
         try:
             result = self.entries[self.current]
         except IndexError:
-            self.condition.release()
             raise StopIteration
         else:
             self.current = self.current + 1
@@ -46,8 +38,5 @@ class Dictionary:
     def __next__(self):
         return self.get()
 
-    def _wordlist_parser(self, path):
-        return FileUtils.get_lines(path)
-
     def __len__(self):
-        return self.entries
+        return len(self.entries)

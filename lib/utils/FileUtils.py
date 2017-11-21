@@ -56,7 +56,7 @@ class File(object):
             self.content = FileUtils.read()
         return self.content()
 
-    def getLines(self):
+    def get_lines(self):
         for line in FileUtils.getLines(self.path):
             yield line
 
@@ -80,8 +80,6 @@ class FileUtils(object):
         else:
             path = ''
         return path
-
-    @staticmethod
 
     @staticmethod
     def is_readable(file_path):
