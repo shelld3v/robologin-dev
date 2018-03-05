@@ -10,25 +10,36 @@ import logging
 class FormDataScannerException(ScannerException):
     pass
 
+
+class CSRFHandler(object):
+    def __init__(self, settings,http_session,url):
+        self.settings = settings
+        self.http_session = http_session
+        self.token_params = []
+
+    def add_token_param(self, param_name):
+        self.token_params.append(param_name)
+
+
 class FormDataScanner(BaseScanner):
     __name__ = "Form Data Authentication"
+    csrf_dictionary = []
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._login_forms = None
         self.logger = logging.getLogger()
 
-    def _parse_login_forms(self):
-        parser = HTMLParser(self.http_response.content)
+    def _parse_login_forms(self,http_reponse_content):
+        parser = HTMLParser(http_reponse_content)
         return parser.get_login_forms()
 
     def _get_login_forms(self):
         if self._login_forms is None:
-            self._login_forms = self._parse_login_forms()
+            self._login_forms = self._parse_login_forms(self.http_response.content)
         return self._login_forms
 
     def _check_response_content(self):
-
         return len(self._get_login_forms()) >= 1
 
     def _get_fuzzer(self):
@@ -36,37 +47,46 @@ class FormDataScanner(BaseScanner):
         form_data = form_data_parser.build_form_data()
         self.logger.debug('Form data method: {0}'.format(form_data.method))
 
+
+
+
         first_faildata_usr = RandomUtils.rand_string(8)
         first_faildata_pwd = RandomUtils.rand_string(8)
         first_credentials = Credentials(first_faildata_usr, first_faildata_pwd)
-        self.logger.debug('First comparison credentials: {0}'.format(first_credentials))
 
+        self.logger.debug('First comparison credentials: {0}'.format(first_credentials))
+        first_data = form_data.get_data(first_credentials)
+
+        first_response = self.http_session.request(first_data['method'], first_data['url'],
+                params=first_data['get_fields'], data=first_data['post_fields'], headers=first_data['headers'])
+
+
+        csrf_handler = None
+        #if len(form_data_parser.get_all_setted_params()) > 0:
+        #    csrf_handler = self._get_csrf_handler(form_data, first_data, first_credentials)
+
+
+        self.logger.debug('Second comparison credentials: {0}'.format(first_credentials))
         second_faildata_usr = RandomUtils.rand_string(8, omit=first_faildata_usr)
         second_faildata_pwd = RandomUtils.rand_string(8, omit=first_faildata_pwd)
         second_credentials = Credentials(second_faildata_usr, second_faildata_pwd)
-        self.logger.debug('Second comparison credentials: {0}'.format(first_credentials))
 
-        first_url, first_headers, first_get_fields, first_post_fields = \
-            form_data.get_data(first_credentials)
-        second_url, second_headers, second_get_fields, second_post_fields = \
-            form_data.get_data(second_credentials)
+        second_data = form_data.get_data(second_credentials)
 
-        first_response = self.http_session.request(form_data.method, first_url,
-                params=first_get_fields, data=first_post_fields, headers=first_headers)
-
-        second_response = self.http_session.request(form_data.method, second_url,
-                params=second_get_fields, data=second_post_fields, headers=second_headers)
+        second_response = self.http_session.request(second_data['method'], second_data['url'],
+                params=second_data['get_fields'], data=second_data['post_fields'], headers=second_data['headers'])
 
 
         if first_response.status_code != second_response.status_code:
             raise FormDataScannerException('Status codes differs in initial response scanning')
 
-
-
         differ = RatioDiffCalc()
         ratio = differ.get_quick_ratio(first_response.content, second_response.content)
+
         self.logger.debug('Initial Web Form Scan ratio {0}'.format(ratio))
+
         recognition_engine = None
+
         dynamic_marks = []
         if ratio >= 0.98:
             recognition_engine = QuickRatioWebFormRecognition(0.98, first_response)
@@ -77,10 +97,8 @@ class FormDataScanner(BaseScanner):
                 clean_second_body = differ.remove_marks(seconde_response.content)
                 if differ.get_quick_ratio(clean_first_body, clean_second_body) >= 0.98:
                     recognition_engine = QuickRatioWebFormRecognition(0.98, first_response)
-        return FormDataFuzzer(self.settings, self.http_session,first_url, form_data, recognition_engine)
 
-
-
+        return FormDataFuzzer(self.settings, self.http_session,first_data['url'], form_data, recognition_engine)
 
 
     def _setup_parser(self, first_page, second_page):
@@ -95,6 +113,37 @@ class FormDataScanner(BaseScanner):
             self.scan_ratio = base_ratio
 
 
+    def _get_csrf_handler(self,form_data_parser, previous_data, credentials):
+        setted_params = form_data_parser.get_all_setted_params()
+        form_data = form_data_parser.build_form_data()
+
+        csrf_handler = CSRFHandler(self.settings,self.http_session,self.url)
+
+        for param_name in setted_params:
+            if param_name in self.csrf_dictionary:
+                csrf_handler.add_token_param(param_name)
+
+        data = form_data.get_data(credentials)
+        second_response = self.http_session.get(data['url'])
+        second_login_form = self.parse_login_forms(second_response.content)
+        second_form_data_parser = FormDataParser(self.url, second_login_form)
+        second_data = second_form_data_parser.build_form_data().get_data(credentials)
+
+        for param_name in __find_diff_token('get_fields', previous_data, second_data):
+            csrf_handler.add_token_param(param_name)
+        for param_name in __find_diff_token('post_fields', previous_data, second_data):
+            cstf_handler.add_token_param(param_name)
+
+        return csrf_handler
+
+
+    def __find_diff_token(self, field_type, first_data, second_data):
+        return [first_field[0]
+                for first_field in first_data[field_type]
+                    for second_field in second_field[field_type]
+                        if first_field[0] == second_field[0] and
+                            second_field[1] != second_field[1]
+                ]
 
 
 

@@ -1,12 +1,13 @@
 import copy
-
-from requests.packages.urllib3.util.retry import Retry
-from requests.adapters import HTTPAdapter
+from http.client import IncompleteRead
+import socket
+import time
 
 from requests.packages import urllib3
 from requests.sessions import Session
-from requests.compat import OrderedDict
+from requests.compat import OrderedDict, urlparse, urlunparse
 from requests.models import PreparedRequest
+from requests.exceptions import TooManyRedirects, ConnectionError, ConnectTimeout, ReadTimeout, Timeout
 
 
 class BaseHandler:
@@ -33,6 +34,10 @@ class UserAgentHandler:
     def __init__(self, user_agents=None):
         super().__init__()
         self.proxies
+
+
+class RequestException(Exception):
+    pass
 
 
 """
@@ -74,14 +79,15 @@ class HttpSession(Session):
                  proxies=None,
                  verify=False,
                  allow_redirects=False,
-                     user_agent=None,
-                 max_retries=5,
+                 user_agent=None,
+                 max_retries=3,
                  timeout=30,
                  cookies=None,
                  headers=None,
                  dest_ip_address=None,
                  use_dns_cache=False,
                  delay=None,
+                 dest_ip_addr=None,
                  *args, **kwargs):
         super().__init__(*args, **kwargs)
         urllib3.disable_warnings()
@@ -94,22 +100,30 @@ class HttpSession(Session):
         self.proxy_handler = None
         self.user_agent_handler = None
         self.verify = verify
+        self.dest_ip_addr = dest_ip_addr
+
+        if not max_retries:
+            self.max_retries = 3
+        else:
+            self.max_retries = max_retries
+
         if cookies:
             self.cookies = cookies
+
         self.headers.update(self.custom_headers)
+
         if headers:
             self.headers.update(headers)
+
         if user_agent:
             self.headers['User-Agent'] = user_agent
+
         if proxies:
             self._proxies = proxies
+
         if allow_redirects:
             self.allow_redirects = allow_redirects
-        if max_retries:
-            pass
-            retries = Retry(total=int(max_retries),backoff_factor=0.1,status_forcelist=[ 500, 502, 503, 504 ])
-            self.mount('http://', HTTPAdapter(max_retries=retries))
-            self.mount('https://', HTTPAdapter(max_retries=retries))
+
         PreparedRequest.prepare_headers = HttpSession._prepare_headers
 
     @classmethod
@@ -125,7 +139,38 @@ class HttpSession(Session):
         else:
             return self._proxies
 
+    def _normalize_url(self, url):
+        parsed_url = urlparse(url)
+
+        if parsed_url.scheme not in ['http', 'https']:
+            parsed_url = urlparse('http://{0}'.format(url))
+
+        protocol = parsed_url.scheme
+        host = parsed_url.netloc.split(':')[0]
+        port = None
+
+        try:
+            port = parsed_url.netloc.split(':')[1]
+        except IndexError:
+            port = (443 if parsed_url.scheme == 'https' else 80)
+
+        return protocol, host, port, parsed_url.path, parsed_url.query
+
+    def _get_host_cache(self, host):
+        ip = None
+        if self._dns_cache.get(host):
+            ip = self._dns_cache.get(host)
+        else:
+            try:
+                ip = socket.gethostbyname(host)
+            except socket.gaierror:
+                raise RequestException("Could not resolve domain name")
+        return ip
+
     def request(self, *args, **kwargs):
+        method = args[0]
+        protocol, host, port, path, query = self._normalize_url(args[1])
+
         if not 'proxies' in kwargs:
             kwargs.update({'proxies': self.proxies})
 
@@ -146,9 +191,56 @@ class HttpSession(Session):
         if 'user_agent' in kwargs:
             headers.update({'User-Agent': kwargs['user_agent']})
 
+        dst_host = host
+        host_header = host
+
+        if 'dest_ip_addr' in kwargs:
+            dst_host = kwargs['dest_ip_addr']
+        elif self.dest_ip_addr:
+            dst_host = self.dest_ip_addr
+        elif self.use_dns_cache:
+            dst_host = self.get_host_cache(host)
+
+        if (protocol == 'http' and port != 80) or (protocol == 'https' and port != 443):
+            dst_host += ':{0}'.format(port)
+            host_header += ':{0}'.format(port)
+
+        headers.update({'Host': host_header})
+
+        url = urlunparse([protocol, dst_host, path, None, query, None])
+
         kwargs['headers'] = headers
 
-        return super().request(*args, **kwargs)
+        current_retry = 1
+        result = None
+        last_exception = None
+
+        while current_retry <= self.max_retries:
+            try:
+                result = super().request(method, url, **kwargs)
+
+                time.sleep(self.delay)
+                break
+            except TooManyRedirects as e:
+                raise RequestException('Too many redirects: {0}'.format(e))
+            except ConnectionError as e:
+                if self.proxy is not None:
+                    raise RequestException('Error with the proxy: {0}')
+                continue
+            except (ConnectTimeout,
+                    ReadTimeout,
+                    Timeout,
+                    IncompleteRead,
+                    socket.timeout) as ex:
+                last_exception = ex
+                continue
+            finally:
+                current_retry += 1
+
+        if current_retry > self.max_retries:
+            raise (last_exception)
+
+        return result
 
     '''
         Some CDNs and WAFs block requests

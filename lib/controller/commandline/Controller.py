@@ -23,7 +23,7 @@ VERSION = {
 }
 
 
-class CommandLineController(object):
+class Controller(object):
     def __init__(self, script_path):
 
         global VERSION

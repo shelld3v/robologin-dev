@@ -111,8 +111,7 @@ class Worker:
                     success = self.fuzzer.test_credentials(credentials)
                     for callback in (self.success_callbacks if success else self.failed_callbacks):
                         callback(credentials)
-                except FuzzerException as e:
-
+                except (RequestException, FuzzerException) as e:
                     for callback in self.error_callbacks:
                         callback(credentials, e)
                 except Exception as e:

@@ -9,6 +9,8 @@ class FormData:
         self.url = None
         self.get_fields = []
         self.post_fields = []
+        self.get_tokens = []
+        self.post_tokens = []
         self.method = "POST"
         self.headers = {}
         self.content_type = 'application/x-www-form-urlencoded'
@@ -50,10 +52,10 @@ class FormData:
         self.password_field_name = name
 
     def set_token_field_get(self, name):
-        pass
+        self.get_tokens.append(name)
 
     def set_token_field_post(self, name):
-        pass
+        self.post_tokens.append(name)
 
     def get_data(self, credentials):
         headers = copy.copy(self.headers)
@@ -70,7 +72,12 @@ class FormData:
         else:
             post_fields.append((self.username_field_name, credentials.username,))
 
-        return self.url, self.headers, get_fields, post_fields
+        return {'method':self.method,
+                'url':self.url,
+                'headers':self.headers,
+                'get_fields':get_fields,
+                'post_fields': post_fields,
+                }
 
     def __str__(self):
         return "URL: {0}, HEADERS: {1}, GET: {2}, POST: {3}".format(self.url, \
@@ -82,6 +89,7 @@ class FormDataParser:
     def __init__(self, url, form):
         self.url = url
         self.form = form
+        self.__setted_params = None
 
     def build_form_data(self):
         form_data = FormData()
@@ -102,7 +110,7 @@ class FormDataParser:
         for key in get_params.keys():
             for value in get_params[key]:
                 form_data.add_get_field(key, value)
-        form_fields = self._parse_setted_params()
+        form_fields = self.get_all_setted_params()
         for key in form_fields.keys():
             for value in form_fields[key]:
                 if self._get_method() is 'GET':
@@ -124,13 +132,26 @@ class FormDataParser:
 
         return form.find('input', attrs={'name': True, 'type': 'text'})
 
-    def _parse_setted_params(self):
+
+    def __parse_params_form_action(self, form_func):
+        lambda x: x.fi
+
+    def __parse_params_by_attrs(self, type, attrs):
         params = {}
-        for field in self.form.find_all('input', attrs={'name': True, 'value': True}):
+        form_fields = self.form.find_all(type, attrs=attrs)
+        for field in form_fields:
             if params.get(field['name']) is None:
                 params[field['name']] = []
             params[field['name']].append(field['value'])
+
         return params
+
+
+    def get_all_setted_params(self):
+        if not self.__setted_params:
+            self.__setted_params = self.__parse_params_by_attrs('input',
+                                        {'name': True, 'value': True})
+        return self.__setted_params
 
     def _parse_url(self, url):
 
@@ -156,3 +177,24 @@ class FormDataParser:
             url = requests.utils.requote_uri(self.url)
 
         return url
+
+    def xpath_soup(element):
+        """
+        https://gist.github.com/ergoithz/6cf043e3fdedd1b94fcf#file-xpath_soup-py
+        Generate xpath of soup element
+        :param element: bs4 text or node
+        :return: xpath as string
+        """
+        components = []
+        child = element if element.name else element.parent
+        for parent in child.parents:
+            """
+            @type parent: bs4.element.Tag
+            """
+            previous = itertools.islice(parent.children, 0, parent.contents.index(child))
+            xpath_tag = child.name
+            xpath_index = sum(1 for i in previous if i.name == xpath_tag) + 1
+            components.append(xpath_tag if xpath_index == 1 else '%s[%d]' % (xpath_tag, xpath_index))
+            child = parent
+        components.reverse()
+        return '/%s' % '/'.join(components)
