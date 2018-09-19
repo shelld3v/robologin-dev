@@ -17,3 +17,6 @@ For any question, suggestion, open an issue
 ## TODO
 - [TODO CODE](https://github.com/maurosoria/robologin-dev/blob/master/TODO.md)
 - [TODO WORDLIST](https://github.com/maurosoria/robologin-dev/blob/master/TODO-WORDLIST.md)
+
+## License 
+GPLv3 
