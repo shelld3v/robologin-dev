@@ -5,6 +5,8 @@ It is a project I've started a year ago and never finished. It would be an autom
 
 Need help for ideas, feel free to use the tool for testing porpuse, pull requests and open issues
 
+Maybe with a little help I can finish this
+
 ## Need help for
 - Testing (bugfixes)
 - Coding
@@ -13,5 +15,5 @@ Need help for ideas, feel free to use the tool for testing porpuse, pull request
 For any question, suggestion, open an issue
 
 ## TODO
-https://github.com/maurosoria/robologin-dev/blob/master/TODO.md
-https://github.com/maurosoria/robologin-dev/blob/master/TODO-WORDLIST.md
+- [TODO CODE](https://github.com/maurosoria/robologin-dev/blob/master/TODO.md)
+- [TODO WORDLIST](https://github.com/maurosoria/robologin-dev/blob/master/TODO-WORDLIST.md)
