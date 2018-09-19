@@ -1,0 +1,42 @@
+admin:admin
+admin:123456
+admin:12345
+admin:12345678
+administracion:administracion
+administrador:administrador
+administra:administra
+admin:nimda
+nimda:nimda
+username:password
+user:password
+username:pass
+user:pass
+admin:pwd
+admin:asdasd
+asdasd:asdasd
+system:system
+sistema:sistema
+admin:changeme
+changeme:changeme
+prueba:prueba
+user:user
+test:test
+testing:testing
+root:root
+httpwatch:foo
+demo:demo
+demo_admin:demo
+' or '1'='1:' or '1'='1
+" or "1"="1:" or "1"="1
+' or '1'='1'--:' or '1'='1'--
+" or "1"="1"--:" or "1"="1"--
+manager:manager
+developer:developer
+desarrollo:desarrollo
+develop:develop
+desarrollador:desarrollador
+mantenimiento:mantenimiento
+soporte:soporte
+deploy:deploy
+auditoria:auditoria
+staging:staging
