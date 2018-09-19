@@ -29,7 +29,7 @@ class Controller(object):
         global VERSION
         self.script_path = script_path
         self.arguments = self.parse_arguments()
-        self.scanners = [HTTPAuthScanner, FormDataScanner]
+        self.scanners = [HttpAuthScanner, FormDataScanner]
         self.running = False
         self.setup_logger()
         PROGRAM_BANNER = open(
