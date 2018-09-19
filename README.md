@@ -5,9 +5,13 @@ It is a project I've started a year ago and never finished. It would be an autom
 
 Need help for ideas, feel free to use the tool for testing porpuse, pull requests and open issues
 
-Need help for
+## Need help for
 - Testing (bugfixes)
 - Coding
 - Creating Wordlists
 
 For any question, suggestion, open an issue
+
+## TODO
+https://github.com/maurosoria/robologin-dev/blob/master/TODO.md
+https://github.com/maurosoria/robologin-dev/blob/master/TODO-WORDLIST.md
