@@ -99,8 +99,8 @@ Arguments
 3. Drop cookies
 4. request, using previous creds, get all setted params (hidden, radio, etc),
 5. Evaluation
-5.1. If any setted_params changes, there is a possible csrf token
-5.2 If not setted_params changes
+- If any setted_params changes, there is a possible csrf token
+- If not setted_params changes
     - more requests for testing
     - get setted_params size and entropy
     - string_size > 16 AND entropy > X -> csrf value
