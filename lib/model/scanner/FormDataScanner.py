@@ -1,5 +1,5 @@
 from lib.model.core.BaseScanner import BaseScanner, ScannerException
-from lib.model.parser.HTMLParser import HTMLParser
+from lib.model.parser.HtmlParser import HTMLParser
 from lib.model.parser.FormData import FormDataParser
 from lib.model.fuzzer.FormDataFuzzer import FormDataFuzzer,QuickRatioWebFormRecognition
 from lib.model.wordlist.PlainTextWordlist import Credentials

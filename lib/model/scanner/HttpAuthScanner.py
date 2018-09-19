@@ -1,5 +1,5 @@
 from lib.model.core.BaseScanner import BaseScanner
-from lib.model.fuzzer.HTTPAuthFuzzer import BasicHTTPAuthFuzzer, DigestHTTPAuthFuzzer
+from lib.model.fuzzer.HttpAuthFuzzer import BasicHTTPAuthFuzzer, DigestHTTPAuthFuzzer
 
 
 class HTTPAuthScanner(BaseScanner):

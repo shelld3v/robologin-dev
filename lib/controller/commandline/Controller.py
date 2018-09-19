@@ -10,7 +10,7 @@ from lib.model.core.Dictionary import Dictionary
 from lib.model.core.Worker import Worker
 from lib.model.connection.HttpSession import HttpSession
 from lib.model.wordlist.PlainTextWordlist import DefaultPlainTextWordlist
-from lib.model.scanner.HTTPAuthScanner import HTTPAuthScanner
+from lib.model.scanner.HttpAuthScanner import HttpAuthScanner
 from lib.model.scanner.FormDataScanner import FormDataScanner
 
 MAYOR_VERSION = 0
