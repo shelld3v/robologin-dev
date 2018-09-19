@@ -1,10 +1,10 @@
 from lib.model.core.BaseScanner import BaseScanner
-from lib.model.fuzzer.HttpAuthFuzzer import BasicHTTPAuthFuzzer, DigestHTTPAuthFuzzer
+from lib.model.fuzzer.HttpAuthFuzzer import BasicHttpAuthFuzzer, DigestHttpAuthFuzzer
 
 
-class HTTPAuthScanner(BaseScanner):
+class HttpAuthScanner(BaseScanner):
     __name__ = "HTTP Authentication"
-    HTTP_AUTHS = {"digest": DigestHTTPAuthFuzzer, "basic": BasicHTTPAuthFuzzer}
+    HTTP_AUTHS = {"digest": DigestHttpAuthFuzzer, "basic": BasicHttpAuthFuzzer}
 
     def __get_auth_header(self):
         return self.http_response.headers.get("www-authenticate").strip().lower()

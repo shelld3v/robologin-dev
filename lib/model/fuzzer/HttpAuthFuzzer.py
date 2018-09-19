@@ -3,7 +3,7 @@ from requests.auth import HTTPBasicAuth, HTTPDigestAuth
 from lib.model.core.BaseFuzzer import BaseFuzzer
 
 
-class BaseHTTPAuthFuzzer(BaseFuzzer):
+class BaseHttpAuthFuzzer(BaseFuzzer):
     def __init__(self, settings, http_session, url):
         super().__init__(settings, http_session, url)
         self.unauthorized_status_code = 401
@@ -16,14 +16,14 @@ class BaseHTTPAuthFuzzer(BaseFuzzer):
         raise NotImplemented
 
 
-class BasicHTTPAuthFuzzer(BaseHTTPAuthFuzzer):
+class BasicHttpAuthFuzzer(BaseHttpAuthFuzzer):
     __name__ = "Basic HTTP Authentication"
 
     def _get_auth_type(self, credentials):
         return HTTPBasicAuth(credentials.username, credentials.password)
 
 
-class DigestHTTPAuthFuzzer(BaseHTTPAuthFuzzer):
+class DigestHttpAuthFuzzer(BaseHttpAuthFuzzer):
     __name__ = "Digest HTTP Authentication"
 
     def _get_auth_type(self, credentials):
