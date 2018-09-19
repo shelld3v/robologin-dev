@@ -8,6 +8,13 @@ class HTMLParser(BeautifulSoup):
         self._fixed_types = False
         self.fix_types()
 
+    #def has_iframes(self):
+
+
+
+    #def fill_iframes(self):
+
+
     def get_password_fields(self):
         return self.find_all('input', {'type': 'password', 'name': True})
 

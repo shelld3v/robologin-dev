@@ -224,7 +224,7 @@ class HttpSession(Session):
             except TooManyRedirects as e:
                 raise RequestException('Too many redirects: {0}'.format(e))
             except ConnectionError as e:
-                if self.proxy is not None:
+                if self.proxy_handler is not None:
                     raise RequestException('Error with the proxy: {0}')
                 continue
             except (ConnectTimeout,

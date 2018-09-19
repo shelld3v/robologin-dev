@@ -10,8 +10,6 @@ class FormDataFuzzer(BaseFuzzer):
         self.recognition_engine = recognition_engine
         self.form_data = form_data
 
-
-
     def test_credentials(self, credentials):
         data = self.form_data.get_data(credentials)
         response = self.http_session.request(data['method'], data['url'],

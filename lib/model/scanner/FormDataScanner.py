@@ -48,8 +48,6 @@ class FormDataScanner(BaseScanner):
         self.logger.debug('Form data method: {0}'.format(form_data.method))
 
 
-
-
         first_faildata_usr = RandomUtils.rand_string(8)
         first_faildata_pwd = RandomUtils.rand_string(8)
         first_credentials = Credentials(first_faildata_usr, first_faildata_pwd)

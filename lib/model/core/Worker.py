@@ -4,7 +4,7 @@ import traceback
 import datetime
 
 from lib.model.core.BaseFuzzer import FuzzerException
-
+from lib.model.connection.HttpSession import RequestException
 
 class Worker:
     def __init__(self, http_session, dictionary, fuzzer, logger, max_threads=10,
@@ -17,7 +17,6 @@ class Worker:
         self.failed_callbacks = failed_callbacks
         self.error_callbacks = error_callbacks
         self.child_threads = []
-
         self.threads_count = max_threads if len(self.dictionary) >= max_threads else len(self.dictionary)
         self.running = False
         self.threads_running = 0
@@ -39,6 +38,7 @@ class Worker:
     def _setup_threads(self):
         if len(self.child_threads) != 0:
             self.child_threads = []
+
         for i in range(self.threads_count):
             thread_name = "robologin-worker-child-thread-{0}".format(i)
             thread = threading.Thread(target=self._thread_proc, name=thread_name)
