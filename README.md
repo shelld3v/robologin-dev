@@ -7,6 +7,9 @@ Need help for ideas, feel free to use the tool for testing porpuse, pull request
 
 Maybe with a little help I can finish this
 
+## Example
+```python3 robologin.py -u http://testphp.vulnweb.com/login.php```
+
 ## Need help for
 - Testing (bugfixes)
 - Coding
