@@ -15,7 +15,8 @@ class FormDataFuzzer(BaseFuzzer):
         response = self.http_session.request(data['method'], data['url'],
                 params=data['get_fields'], data=data['post_fields'], headers=data['headers'])
 
-        return self.recognition_engine.match(response)
+        result = self.recognition_engine.match(response)
+        return result
 
 
 class BaseWebFormRecognition:
@@ -32,7 +33,17 @@ class QuickRatioWebFormRecognition(BaseWebFormRecognition):
         if dynamic_marks and len(dynamic_marks >= 1):
             self.initial_response.content = self.differ.remove_marks(initial_response.content, dynamic_marks)
 
-        self.logger = logging.getLogger()
+        self.logger = logging.getLogger("quick-ratio-webform-recon")
+
+    def _match_headers(self, response):
+        pass
+
+
+    def _match_status_code(self, response):
+        pass
+
+    def _match_json_data(self, response):
+        pass
 
     def match(self, response):
         clean_response_body = response.content
@@ -40,7 +51,8 @@ class QuickRatioWebFormRecognition(BaseWebFormRecognition):
             return True
         if self.dynamic_marks:
             clean_response_body = self.differ.remove_marks(response.content)
-        ratio = self.differ.get_quick_ratio(self.initial_response.content, clean_response_body)
-        self.logger.debug('Comparison Page Ratio: {0}'.format(ratio))
-        return ratio < self.min_ratio
+        content_ratio = self.differ.get_quick_ratio(self.initial_response.content, clean_response_body)
+        self.logger.debug('Comparison Page Ratio: {0}'.format(content_ratio))
+
+        return content_ratio < self.min_ratio
 

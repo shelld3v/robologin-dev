@@ -11,6 +11,9 @@ username:password
 user:password
 username:pass
 user:pass
+admin:marcelo
+superuser:marcelo
+root:iloveyou
 admin:pwd
 admin:asdasd
 asdasd:asdasd

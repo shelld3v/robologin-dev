@@ -5,6 +5,7 @@ from lib.model.fuzzer.FormDataFuzzer import FormDataFuzzer,QuickRatioWebFormReco
 from lib.model.wordlist.PlainTextWordlist import Credentials
 from lib.utils.RatioDiffCalc import RatioDiffCalc
 from lib.utils.RandomUtils import RandomUtils
+
 import logging
 
 class FormDataScannerException(ScannerException):
@@ -16,8 +17,10 @@ class CSRFHandler(object):
         self.settings = settings
         self.http_session = http_session
         self.token_params = []
+        self.logger = logging.getLogger("csrf-handler")
 
     def add_token_param(self, param_name):
+        self.logger.debug("POSSIBLE CSRF TOKEN DETECTED: {0}".format(param_name))
         self.token_params.append(param_name)
 
 
@@ -28,7 +31,7 @@ class FormDataScanner(BaseScanner):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._login_forms = None
-        self.logger = logging.getLogger()
+        self.logger = logging.getLogger("form-data-scanner")
 
     def _parse_login_forms(self,http_reponse_content):
         parser = HTMLParser(http_reponse_content)
@@ -43,7 +46,8 @@ class FormDataScanner(BaseScanner):
         return len(self._get_login_forms()) >= 1
 
     def _get_fuzzer(self):
-        form_data_parser = FormDataParser(self.url, self._get_login_forms()[0])
+        login_form = self._get_login_forms()[0]
+        form_data_parser = FormDataParser(self.url, login_form)
         form_data = form_data_parser.build_form_data()
         self.logger.debug('Form data method: {0}'.format(form_data.method))
 
@@ -60,8 +64,9 @@ class FormDataScanner(BaseScanner):
 
 
         csrf_handler = None
-        #if len(form_data_parser.get_all_setted_params()) > 0:
-        #    csrf_handler = self._get_csrf_handler(form_data, first_data, first_credentials)
+        if len(form_data_parser.get_all_setted_params()) > 0:
+            csrf_handler = self._get_csrf_handler(form_data_parser, first_data, first_credentials)
+            pass
 
 
         self.logger.debug('Second comparison credentials: {0}'.format(first_credentials))
@@ -123,25 +128,30 @@ class FormDataScanner(BaseScanner):
 
         data = form_data.get_data(credentials)
         second_response = self.http_session.get(data['url'])
-        second_login_form = self.parse_login_forms(second_response.content)
+        second_login_form = self._parse_login_forms(second_response.content)[0]
         second_form_data_parser = FormDataParser(self.url, second_login_form)
         second_data = second_form_data_parser.build_form_data().get_data(credentials)
 
-        for param_name in __find_diff_token('get_fields', previous_data, second_data):
+        for param_name in self.__find_diff_token('get_fields', previous_data, second_data):
             csrf_handler.add_token_param(param_name)
-        for param_name in __find_diff_token('post_fields', previous_data, second_data):
-            cstf_handler.add_token_param(param_name)
+
+        for param_name in self.__find_diff_token('post_fields', previous_data, second_data):
+            csrf_handler.add_token_param(param_name)
 
         return csrf_handler
 
 
     def __find_diff_token(self, field_type, first_data, second_data):
-        return [first_field[0]
-                for first_field in first_data[field_type]
-                    for second_field in second_field[field_type]
-                        if first_field[0] == second_field[0] and
-                            second_field[1] != second_field[1]
-                ]
+            diff_result = []
+            for t1 in first_data[field_type]:
+                for t2 in second_data[field_type]:
+                    if t1[0] == t2[0] and t1[1] != t2[1]:
+                        diff_result.append(t1[0])
+            for t1 in second_data[field_type]:
+                for t2 in first_data[field_type]:
+                    if t1[0] == t2[0] and t1[1] != t2[1]:
+                        diff_result.append(t1[0])
+            return list(set(diff_result))
 
 
 

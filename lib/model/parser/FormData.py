@@ -88,18 +88,36 @@ class FormData:
 class FormDataParser:
     def __init__(self, url, form):
         self.url = url
-        self.form = form
+        self._form = form
         self.__setted_params = None
+
+    @property
+    def form(self):
+        if not self._form.__class__.__name__ is 'Tag':
+            print (self._form[0])
+            from bs4 import BeautifulSoup
+            return BeautifulSoup(self._form[0], 'lxml').find('form')
+        return (self._form)
+
+    @form.setter
+    def form(self, value):
+        print('WTF')
+
 
     def build_form_data(self):
         form_data = FormData()
+
         form_data.set_method(self._get_method())
+
         action = self._resolve_action()
         url, get_params = self._parse_url(action)
+
         form_data.set_url(url)
         form_data.set_content_type = self._get_content_type()
+
         password_field = self.form.find('input', attrs={'name': True, 'type': 'password'})
         username_field = self._detect_username_field(self.form, password_field)
+
         if self._get_method() is 'GET':
             form_data.set_password_field_get(password_field['name'])
             form_data.set_username_field_get(username_field['name'])
@@ -110,13 +128,19 @@ class FormDataParser:
         for key in get_params.keys():
             for value in get_params[key]:
                 form_data.add_get_field(key, value)
+
         form_fields = self.get_all_setted_params()
+
         for key in form_fields.keys():
+            if key in [form_data.username_field_name, form_data.password_field_name]:
+                continue
+
             for value in form_fields[key]:
                 if self._get_method() is 'GET':
                     form_data.add_get_field(key, value)
                 else:
                     form_data.add_post_field(key, value)
+
         return form_data
 
     def _detect_username_field(self, form, password_field):
@@ -154,10 +178,10 @@ class FormDataParser:
         return self.__setted_params
 
     def _parse_url(self, url):
-
         parsed = urllib.parse.urlsplit(url)
         url = '{0}://{1}{2}'.format(parsed.scheme, parsed.netloc, parsed.path)
         params = urllib.parse.parse_qs(parsed.query)
+
         return url, params
 
     def _get_method(self):
@@ -169,8 +193,12 @@ class FormDataParser:
             else "application/x-www-form-urlencoded"
 
     def _resolve_action(self):
+        if self.form.get('action') is None:
+            return self.url
+
         parsed = urllib.parse.urlsplit(self.form['action'])
         url = None
+
         if not parsed.netloc:
             url = urllib.parse.urljoin(self.url, requests.utils.requote_uri(self.form['action']))
         else:

@@ -1,6 +1,3 @@
-import copy
-from http.client import IncompleteRead
-import socket
 import time
 
 from requests.packages import urllib3
@@ -8,6 +5,11 @@ from requests.sessions import Session
 from requests.compat import OrderedDict, urlparse, urlunparse
 from requests.models import PreparedRequest
 from requests.exceptions import TooManyRedirects, ConnectionError, ConnectTimeout, ReadTimeout, Timeout
+
+import copy
+from http.client import IncompleteRead
+import socket
+from http.cookies import SimpleCookie
 
 
 class BaseHandler:
@@ -19,6 +21,22 @@ class BaseHandler:
 
     def reset(self):
         pass
+
+
+class CookieParser:
+    def __init__(self, raw_cookie):
+        self.cookie = SimpleCookie()
+        cookie.load(raw_cookie)
+
+        self.cookies = {}
+        for key, morsel in cookie.items():
+            cookies[key] = morsel
+
+    def get_cookie_value(self, key):
+        if cookies.get(key) is not None:
+            return cookies.get(key).value
+        else:
+            return None
 
 
 class DefaultProxyHandler:
@@ -218,7 +236,6 @@ class HttpSession(Session):
         while current_retry <= self.max_retries:
             try:
                 result = super().request(method, url, **kwargs)
-
                 time.sleep(self.delay)
                 break
             except TooManyRedirects as e:

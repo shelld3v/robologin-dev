@@ -47,6 +47,9 @@ class Controller(object):
 
     def setup_logger(self):
         self.logger = logging.getLogger("robologin")
+        logging.getLogger('urllib3.connectionpool').setLevel(logging.ERROR)
+
+        logging.basicConfig(level=logging.DEBUG)
         formatter = None
         if self.arguments.debug:
             self.logger.setLevel(logging.DEBUG)
