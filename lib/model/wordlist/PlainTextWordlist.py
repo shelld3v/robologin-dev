@@ -11,7 +11,7 @@ class Credentials:
         return hash(self.username) ^ hash(self.password)
 
     def __str__(self):
-        return "{0} : {1}".format(self.username, self.password)
+        return "{0}:{1}".format(self.username, self.password)
 
 
 class BasePlainTextWordlist(BaseWordlist):
