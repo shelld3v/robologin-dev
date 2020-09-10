@@ -117,7 +117,7 @@ class ArgumentParser(object):
         self.redirect = config.safe_getboolean("general", "follow-redirects", False)
         
         
-        # credentials
+        # Credentials
         self.wordlist = config.safe_get("credentials", "userpass-wordlist",
                                         FileUtils.build_path(self.script_path, "db", "default.txt"))
 
@@ -155,13 +155,13 @@ class ArgumentParser(object):
         connection.add_option('--delay', help='Delay between requests (float number)', action='store', dest='delay',
                               type='float', default=self.delay)
 
-        # Dictionary settings
-        dictionary = OptionGroup(parser, 'Credentials Settings')
-        dictionary.add_option('-n', '--usernames', action='store', dest='usernames', default='admin')
-        dictionary.add_option('-w', '--password-wordlist', action='append', dest='password_wordlist',default=self.wordlist)
-        dictionary.add_option('-N', '--username-wordlist', action='append', dest='username_wordlist', default=[])
-        dictionary.add_option('-W', '--userpass-wordlist', action='append', dest='userpass_wordlist', default=[])
-        dictionary.add_option('--uws', '--userpass-wordlist-separator', action='store', dest='userpass_wordlist_separator', default=':')
+        # Credentials settings
+        credentials = OptionGroup(parser, 'Credentials Settings')
+        credentials.add_option('-n', '--usernames', action='store', dest='usernames', default='admin')
+        credentials.add_option('-w', '--password-wordlist', action='append', dest='password_wordlist',default=self.wordlist)
+        credentials.add_option('-N', '--username-wordlist', action='append', dest='username_wordlist', default=[])
+        credentials.add_option('-W', '--userpass-wordlist', action='append', dest='userpass_wordlist', default=[])
+        credentials.add_option('--uws', '--userpass-wordlist-separator', action='store', dest='userpass_wordlist_separator', default=':')
 
 
 
