@@ -149,7 +149,7 @@ class Controller(object):
     def success_callback(self, credentials):
         self.report_credential(credentials)
         self.success_credentials.append(credentials)
-        self.logger.info("::::::: {0} ::::::: SUCCESS".format(credentials))
+        self.logger.info(":::::::: {0} :::::::: SUCCESS".format(credentials))
 
     def failed_callback(self, credentials):
         self.report_credential(credentials)
