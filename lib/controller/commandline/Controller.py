@@ -43,7 +43,7 @@ class Controller(object):
         for wordlist in self.get_wordlists():
             self.dictionary.append_from_wordlist(wordlist)
         self.start_loop()
-        self.logger.info("FINISH")
+        self.logger.info("Finished")
 
     def setup_logger(self):
         self.logger = logging.getLogger("robologin")
@@ -78,7 +78,7 @@ class Controller(object):
         self.settings = {}
 
     def get_http_session(self):
-        return HttpSession(proxies={'http':self.arguments.proxy, 'https' : self.arguments.proxy})
+        return HttpSession(proxies={'http':self.arguments.proxy, 'https':self.arguments.proxy})
 
     def start_loop(self):
         #try:
@@ -88,25 +88,30 @@ class Controller(object):
             self.logger.info("Analyzing target: {0}".format(url))
             self.success_credentials = []
             fuzzer = self.scan_site(url)
+            
             if not fuzzer:
-                self.logger.info("No bruteforcing method for site {0} found =(".format(url))
+                self.logger.info("No bruteforcing method for site {0} found".format(url))
                 continue
+            
             self.logger.info("Using method {0}".format(fuzzer.__name__))
             self.tested_credentials = 0
+            
             worker = Worker(self.get_http_session(), self.dictionary, fuzzer, self.logger,
                             self.arguments.threads_count,
                             [self.success_callback], [self.failed_callback], [self.error_callback])
             worker.start()
             worker.wait()
+            
             result_line = ''
+            
             if len(self.success_credentials) > 0:
-                result_line += "\nCredentials found!!!!!!!!!\n"
+                result_line += "\nFound {0} unique credential{1}\n".format(len(self.success_credentials), 's' if len(self.success_credentials) != 1 else '')
                 result_line += "\n"
 
                 for i, cred in enumerate(self.success_credentials):
                     result_line += "{0})  {1}\n".format(i, str(cred))
             else:
-                result_line += "\n\nNo luck =(\n"
+                result_line += "\n\nCouldn't found any credentials!\n"
             self.logger.info(result_line)
 
     def parse_arguments(self):
@@ -144,7 +149,7 @@ class Controller(object):
     def success_callback(self, credentials):
         self.report_credential(credentials)
         self.success_credentials.append(credentials)
-        self.logger.info("********** {0} ********** SUCCESS !!!!!! =D".format(credentials))
+        self.logger.info("::::::: {0} ::::::: SUCCESS".format(credentials))
 
     def failed_callback(self, credentials):
         self.report_credential(credentials)
