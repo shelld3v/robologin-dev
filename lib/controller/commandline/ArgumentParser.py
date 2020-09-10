@@ -111,13 +111,14 @@ class ArgumentParser(object):
         config_path = FileUtils.build_path(self.script_path, "default.conf")
         config.read(config_path)
 
+        
         # General
         self.threads_count = config.safe_getint("general", "threads", 10, list(range(1, 50)))
         self.redirect = config.safe_getboolean("general", "follow-redirects", False)
-        # Dictionary
-
-
-        self.wordlist = config.safe_get("dictionary", "userpass-wordlist",
+        
+        
+        # credentials
+        self.wordlist = config.safe_get("credentials", "userpass-wordlist",
                                         FileUtils.build_path(self.script_path, "db", "default.txt"))
 
         # Connection
@@ -155,7 +156,7 @@ class ArgumentParser(object):
                               type='float', default=self.delay)
 
         # Dictionary settings
-        dictionary = OptionGroup(parser, 'Dictionary Settings')
+        dictionary = OptionGroup(parser, 'Credentials Settings')
         dictionary.add_option('-n', '--usernames', action='store', dest='usernames', default='admin')
         dictionary.add_option('-w', '--password-wordlist', action='append', dest='password_wordlist',default=self.wordlist)
         dictionary.add_option('-N', '--username-wordlist', action='append', dest='username_wordlist', default=[])
@@ -181,7 +182,7 @@ class ArgumentParser(object):
         general.add_option('--random-agents', '--random-user-agents', action="store_true", dest='use_random_agents')
 
         parser.add_option_group(mandatory)
-        parser.add_option_group(dictionary)
+        parser.add_option_group(credentials)
         parser.add_option_group(general)
         parser.add_option_group(connection)
         options, arguments = parser.parse_args()
