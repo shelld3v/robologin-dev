@@ -13,15 +13,15 @@ class ArgumentParser(object):
         self.debug = options.debug
 
         # Parse Target URL
-        if options.url == None:
-            if options.url_list != None:
+        if options.url is None:
+            if options.url_list is not None:
                 with File(options.url_list) as url_list:
                     if not url_list.is_valid():
                         print("The file with URLs does not exist")
                         exit(0)
 
                     if not url_list.is_readable():
-                        print('The input file cannot be read')
+                        print('The file with URLs cannot be read')
                         exit(0)
 
                     self.urlList = list(url_list.get_lines())
