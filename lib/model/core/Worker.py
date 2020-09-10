@@ -60,9 +60,9 @@ class Worker:
             thread["thread"].start()
 
     def _stop_thread(self):
+        self.logger.debug("Stopping threads ...")
         for i, thread in enumerate(self.child_threads):
             if thread["thread"] == threading.current_thread():
-                self.logger.debug("Stopping thread {0}".format(thread["name"]))
                 thread["running"] = False
                 self.threads_running -= 1
                 break
@@ -82,6 +82,7 @@ class Worker:
 
     def wait(self, timeout=None):
         start = datetime.datetime.now()
+        
         def elapsed_time():
             return (datetime.datetime.now() - start).microseconds / 1000000
 
@@ -104,6 +105,7 @@ class Worker:
     def _thread_proc(self):
         while not self.play_event.wait(0.1):
             pass
+        
         try:
             credentials = next(self.dictionary)
             while self.running:
@@ -122,9 +124,10 @@ class Worker:
                         self.paused_semaphore.release()
                         slef.play_event.wait()
                     credentials = next(self.dictionary)
+                    
         except StopIteration as e:
-
             return
+        
         finally:
             self._stop_thread()
 
